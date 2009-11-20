@@ -36,3 +36,11 @@ See help(fastcluster.kmeans) for usage.
 ---------------------------------------------------------------------
 v0.1
     - Initial commit
+
+---------------------------------------------------------------------
+| REFERENCES                                                        |
+---------------------------------------------------------------------
+[1] Philbin, J. and Chum, O. and Isard, M. and Sivic, J. and 
+        Zisserman, A.
+    Object Retrieval with Large Vocabularies and Fast Spatial 
+    Matching, CVPR 2007
