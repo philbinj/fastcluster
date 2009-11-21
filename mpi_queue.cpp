@@ -60,7 +60,7 @@ mpi_static_queue(MPI_Comm comm,
             if (remote_rank == rank) continue;
 
             remote_l = (accum_flops[remote_rank] * work.size())/accum_flops[nprocs];
-            remote_r = (accum_flops[remote_rank] * work.size())/accum_flops[nprocs];
+            remote_r = (accum_flops[remote_rank + 1] * work.size())/accum_flops[nprocs];
 
             for (size_t remote_i = remote_l; remote_i < remote_r; ++remote_i) {
                 MPI_Recv(&transmit_sz, 1, MPI_INT, remote_rank, 0, comm, 0);
@@ -97,7 +97,6 @@ mpi_static_queue(MPI_Comm comm,
             }
         }
     }
-    MPI_Barrier(comm);
 }
 
 void
