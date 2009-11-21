@@ -20,8 +20,8 @@ Before installation make sure the following dependencies are met:
 - PyTables (http://www.pytables.org/)
 - fastann library (http://github.com/philbinj/fastann)
 
-Build the library
-> cmake . && make
+Build the library to install to /usr/local/ (default is /usr/)
+> PREFIX=/usr/local/ cmake . && make
 
 Install
 > make install
