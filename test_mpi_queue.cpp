@@ -90,15 +90,14 @@ public:
     }
 };
 
+template<class QueueFunc>
 int
-main(int argc, char** argv)
+test_with_items(QueueFunc queuefunc)
 {
     int rank, nprocs;
-    MPI_Init(&argc, &argv);
-
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-
+    
     std::vector<fastcluster::work_item*> work_queue;
     std::vector<fastcluster::result_item*> result_queue;
     for (int i=0; i < 10000; ++i) {
@@ -107,12 +106,7 @@ main(int argc, char** argv)
     test_work_functor* func = new test_work_functor;
     test_result_item* dummy_result = new test_result_item;
 
-    fastcluster::mpi_static_queue(MPI_COMM_WORLD,
-                                  0,
-                                  func,
-                                  work_queue,
-                                  &result_queue,
-                                  dummy_result );
+    queuefunc(MPI_COMM_WORLD, 0, func, work_queue, &result_queue, dummy_result);
 
     delete func;
     delete dummy_result;
@@ -123,10 +117,30 @@ main(int argc, char** argv)
     if (rank == 0) {
         for (int i=0; i < (int)result_queue.size(); ++i) {
             if (result_queue[i]) {
-                assert(static_cast<test_result_item*>(result_queue[i])->get_number() == i);
+                if (static_cast<test_result_item*>(result_queue[i])->get_number() != i) {
+                    return -1;
+                }
                 //printf("%d\n", static_cast<test_result_item*>(result_queue[i])->get_number());
                 delete result_queue[i];
             }
         }
     }
+    return 0;
+}
+
+int
+main(int argc, char** argv)
+{
+    int errc;
+    MPI_Init(&argc, &argv);
+
+    errc = test_with_items(fastcluster::mpi_static_queue);
+    if (errc) { return -1; }
+    
+    errc = test_with_items(fastcluster::mpi_dynamic_queue);
+    if (errc) { return -1; }
+
+    MPI_Finalize();
+
+    return 0;
 }

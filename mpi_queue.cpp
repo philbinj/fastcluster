@@ -97,6 +97,7 @@ mpi_static_queue(MPI_Comm comm,
             }
         }
     }
+    MPI_Barrier(comm);
 }
 
 void
@@ -139,15 +140,16 @@ mpi_dynamic_queue(MPI_Comm comm,
                 ndone++;
             }
         }
-        results->resize(work.size(), 0);
+        if (results)
+            results->resize(work.size(), 0);
         while (ndone < nprocs-1) {
             // Receive a result from the processor.
             int tasknum, proc;
             MPI_Recv(&tasknum, 1, MPI_INT, MPI_ANY_SOURCE, 0, comm, &status);
             proc = status.MPI_SOURCE;
             
-            MPI_Recv(&transmit_sz, 1, MPI_INT, proc, 0, comm, 0);
-            if (transmit_sz) {
+            if (results && dummy_result) {
+                MPI_Recv(&transmit_sz, 1, MPI_INT, proc, 0, comm, 0);
                 transmit_buf = new char[transmit_sz];
                 MPI_Recv(transmit_buf, transmit_sz, MPI_CHAR, proc, 0, comm, 0);
 
@@ -175,13 +177,13 @@ mpi_dynamic_queue(MPI_Comm comm,
             MPI_Recv(&itask, 1, MPI_INT, root_rank, 0, comm, 0);
             if (itask < 0) break;
 
-            std::ostringstream oss;
-            
             result_item* res = workf->do_work(work[itask]);
 
             MPI_Send(&itask, 1, MPI_INT, root_rank, 0, comm);
             
-            if (res) {
+            if (results && dummy_result) {
+                std::ostringstream oss;
+            
                 res->serialize(oss);
 
                 std::string oss_str = oss.str();
@@ -191,14 +193,11 @@ mpi_dynamic_queue(MPI_Comm comm,
                 MPI_Send(&oss_sz, 1, MPI_INT, root_rank, 0, comm);
                 MPI_Send((void*)oss_cstr, oss_sz, MPI_CHAR, root_rank, 0, comm);
             }
-            else {
-                int oss_sz = 0;
-                MPI_Send(&oss_sz, 1, MPI_INT, root_rank, 0, comm);
-            }
 
             delete res;
         }
     }
+    MPI_Barrier(comm);
 }
 
 }
