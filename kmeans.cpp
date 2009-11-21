@@ -146,7 +146,7 @@ kmeans(void (*load_rows)(void* p, unsigned l, unsigned r, Float* out),
        char* chkpnt_fn)
 {
     unsigned probe_size = 500;
-    static const int dynamic_nprocs_thresh = 30;
+    static const int dynamic_nprocs_thresh = 10;
     unsigned block_size = 50000; // 50K rows blocksize
 
     int rank, nprocs;

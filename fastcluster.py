@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+import os, sys
 import ctypes
 import tables
 import numpy as np
@@ -130,10 +130,19 @@ def kmeans(clst_fn,
     clusters_ptr = clusters.ctypes.data_as(ctypes.c_void_p)
     # Initialize the clusters
     if libfastcluster.rank() == 0:
+        sys.stdout.write('Sampling cluster centers...')
+        sys.stdout.flush()
         pnts_inds = np.arange(N)
         npr.shuffle(pnts_inds)
-        for i,ind in enumerate(pnts_inds[:K]):
+        pnts_inds = pnts_inds[:K]
+        pnts_inds = np.sort(pnts_inds)
+        for i,ind in enumerate(pnts_inds):
             clusters[i] = pnts_obj[ind]
+            if not (i%(K/100)):
+                sys.stdout.write('\r[%07d/%07d]' % (i, K))
+                sys.stdout.flush()
+        sys.stdout.write('Done...')
+        sys.stdout.flush()
 
     if checkpoint:
         chkpnt_fn = clst_fn + '.chkpnt'
