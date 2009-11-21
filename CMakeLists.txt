@@ -11,9 +11,16 @@ IF(UNIX)
     SET(CMAKE_CXX_COMPILER "mpic++")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O2 -g3 -msse2 -march=native")
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O2 -g3 -msse2 -march=native")
-    SET(CMAKE_INSTALL_PREFIX "/usr/")
     MESSAGE("${CMAKE_CXX_FLAGS}")
 ENDIF(UNIX)
+
+# Set the install prefix
+IF(NOT $ENV{PREFIX} STREQUAL "")
+    SET(CMAKE_INSTALL_PREFIX $ENV{PREFIX})
+ELSE(NOT $ENV{PREFIX} STREQUAL "")
+    SET(CMAKE_INSTALL_PREFIX "/usr/")
+ENDIF(NOT $ENV{PREFIX} STREQUAL "")
+MESSAGE("--- Prefix = " ${CMAKE_INSTALL_PREFIX})
 
 ADD_LIBRARY(fastcluster SHARED mpi_queue.cpp kmeans.cpp randomkit.c whetstone.cpp mpi_utils.cpp)
 TARGET_LINK_LIBRARIES(fastcluster fastann)
